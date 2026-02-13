@@ -41,10 +41,6 @@ galaxy_info:
     - web
     - homelab
 
-  issue_tracker_url: https://github.com/axel/homelab-ansible/issues
-  repository: https://github.com/axel/homelab-ansible
-  documentation: https://github.com/axel/homelab-ansible/blob/main/roles/traefik/README.md
-
 dependencies:
   - role: community.docker
     version: ">=3.0.0"
