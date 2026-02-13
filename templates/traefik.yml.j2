@@ -1,0 +1,155 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+{{ ansible_managed | comment }}
+
+global:
+  checkNewVersion: {{ traefik_check_new_version | bool | lower }}
+  sendAnonymousUsage: {{ traefik_anonymous_usage | bool | lower }}
+
+providers:
+{% if traefik_file_provider_enabled %}
+  file:
+    directory: {{ traefik_file_provider_directory }}
+    watch: true
+{% endif %}
+{% if traefik_docker_provider_enabled %}
+  docker:
+    endpoint: {{ traefik_docker_provider_endpoint }}
+    username: {{ traefik_docker_provider_username }}
+    password: {{ traefik_docker_provider_password }}
+    useBindPortIP: {{ traefik_docker_provider_use_bind_port_ip }}
+    exposedByDefault: false
+    network: {{ traefik_docker_provider_network }}
+    defaultRule: {{ traefik_docker_provider_default_rule }}
+    httpClientTimeout: 0
+    watch: true
+    constraints: {{ traefik_docker_provider_constraints }}
+    allowEmptyServices: false
+    tls:
+      ca: {{ traefik_docker_provider_tls_ca }}
+      cert: {{ traefik_docker_provider_tls_cert }}
+      key: {{ traefik_docker_provider_tls_key }}
+      insecureSkipVerify: {{ traefik_docker_provider_tls_insecure_skip_verify }}
+{% endif %}
+{% if traefik_ecs_provider_enabled %}
+  ecs:
+    autoDiscoverClusters: false
+    ecsAnywhere: false
+    exposedByDefault: false
+    refreshSeconds: 15
+    region: {{ traefik_ecs_provider_region }}
+    accessKeyID: {{ traefik_ecs_provider_access_key_id }}
+    secretAccessKey: {{ traefik_ecs_provider_secret_access_key }}
+    clusters:
+{% for cluster in traefik_ecs_provider_clusters %}
+      - {{ cluster }}
+{% endfor %}
+    constraints: {{ traefik_ecs_provider_constraints }}
+    defaultRule: {{ traefik_ecs_provider_default_rule }}
+{% endif %}
+{% if traefik_http_provider_enabled %}
+  http:
+    endpoint: {{ traefik_http_provider_endpoint }}
+    pollInterval: 5
+    pollTimeout: 5
+    headers: {{ traefik_http_provider_headers }}
+    tls:
+      ca: {{ traefik_http_provider_tls_ca }}
+      cert: {{ traefik_http_provider_tls_cert }}
+      key: {{ traefik_http_provider_tls_key }}
+      insecureSkipVerify: {{ traefik_http_provider_tls_insecure_skip_verify }}
+{% endif %}
+
+entryPoints:
+  {{ traefik_http_entrypoint_name }}:
+    address: {{ traefik_http_address }}:{{ traefik_http_port }}
+    http:
+      redirections:
+        entryPoint:
+          to: {{ traefik_https_entrypoint_name }}
+          scheme: https
+          permanent: true
+      encodedCharacters:
+{{ traefik_entrypoints_encoded_characters | to_nice_yaml | indent(8, first=true) }}
+
+  {{ traefik_https_entrypoint_name }}:
+    address: {{ traefik_https_address }}:{{ traefik_https_port }}
+    http:
+      middlewares:
+        - chain-global@file
+      encodedCharacters:
+{{ traefik_entrypoints_encoded_characters | to_nice_yaml | indent(8, first=true) }}
+
+{% if traefik_enable_healthcheck_url %}
+  {{ traefik_healthcheck_entrypoint_name }}:
+    address: "{{ traefik_healthcheck_address }}:{{ traefik_healthcheck_port }}"
+{% endif %}
+
+api:
+  dashboard: {{ traefik_dashboard_enabled | bool | lower }}
+  insecure: false
+
+{% if traefik_enable_healthcheck_url %}
+ping:
+  entryPoint: {{ traefik_healthcheck_entrypoint_name }}
+{% endif %}
+
+log:
+  level: {{ traefik_log_level }}
+  format: {{ traefik_log_format }}
+
+{% if traefik_access_log_enabled %}
+accessLog:
+  format: json
+  bufferingSize: 100
+  filters:
+    statusCodes:
+      - "400-599"
+    retryAttempts: true
+    minDuration: "10ms"
+  fields:
+    names:
+      StartUTC: drop # Enable local time in logs
+{% endif %}
+
+certificatesResolvers:
+{% if traefik_acme_provider == 'zerossl' %}
+  zerossl:
+    acme:
+      email: {{ traefik_acme_email }}
+      storage: {{ traefik_acme_storage }}
+      caServer: {{ traefik_zerossl_server }}
+      eab:
+        kid: {{ traefik_zerossl_eab_kid }}
+        hmacEncoded: {{ traefik_zerossl_eab_hmac }}
+      dnsChallenge:
+        provider: {{ traefik_dns_provider }}
+        resolvers:
+{% for resolver in traefik_dns_resolvers %}
+          - {{ resolver }}
+{% endfor %}
+        propagation:
+          delayBeforeChecks: 30s
+{% elif traefik_acme_provider == 'letsencrypt' %}
+  letsencrypt:
+    acme:
+      email: {{ traefik_acme_email }}
+      storage: {{ traefik_acme_storage }}
+      caServer: {{ traefik_letsencrypt_server }}
+      dnsChallenge:
+        provider: {{ traefik_dns_provider }}
+        resolvers:
+{% for resolver in traefik_dns_resolvers %}
+          - {{ resolver }}
+{% endfor %}
+        propagation:
+          delayBeforeChecks: 30s
+{% endif %}
+{% if traefik_metrics_enabled %}
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    manualRouting: true
+{% endif %}

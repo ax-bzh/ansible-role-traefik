@@ -1,0 +1,123 @@
+{{ ansible_managed | comment }}
+
+services:
+  traefik:
+    image: {{ traefik_image }}
+    container_name: {{ traefik_container_name }}
+    restart: {{ traefik_restart_policy }}
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "{{ traefik_container_http_port }}:{{ traefik_http_port }}"
+      - "{{ traefik_container_https_port }}:{{ traefik_https_port }}"
+    networks:
+{{ traefik_networks | to_nice_yaml | indent(6, first=true) }}
+    environment:
+{{ traefik_container_env_variables | to_nice_yaml | indent(6, first=true) }}
+    command:
+      - --configFile=/static/traefik.yml
+    volumes:
+      - {{ traefik_volume_prefix }}-static:/static
+      - {{ traefik_volume_prefix }}-dynamic:/dynamic
+      - {{ traefik_volume_prefix }}-certs:/certs
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: {{ traefik_memory_limit }}
+          cpus: {{ traefik_cpu_limit }}
+
+{% if traefik_error_pages_enabled %}
+  error-pages:
+    image: {{ traefik_error_pages_image }}
+    container_name: {{ traefik_error_pages_container_name}}
+    restart: {{ traefik_error_pages_restart_policy }}
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+{{ traefik_error_pages_networks | to_nice_yaml | indent(6, first=true) }}
+    environment:
+      TEMPLATE_NAME: {{ traefik_error_pages_template }}
+    expose:
+      - {{ traefik_error_pages_listen_port}}
+    healthcheck:
+      test: ["CMD", "error-pages", "healthcheck", "--port={{ traefik_error_pages_listen_port }}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: {{ traefik_error_pages_memory_limit }}
+          cpus: {{ traefik_error_pages_cpu_limit }}
+{% endif %}
+
+networks:
+{% for network in traefik_managed_networks | default([]) %}
+  {{ network.name }}:
+{{ network | to_nice_yaml | indent(4, first=true) }}
+{% endfor %}
+{% for result in traefik_external_networks_info.results | default([]) %}
+{% if result.exists %}
+  {{ result.item.name }}:
+    name: {{ result.item.name }}
+    external: true
+{% endif %}
+{% endfor %}
+
+volumes:
+  {{ traefik_volume_prefix }}-static:
+    name: "{{ traefik_volume_prefix }}-static"
+    driver: local
+{% if traefik_volume_labels is defined
+and traefik_volume_labels is not mapping
+and traefik_volume_labels is iterable
+and traefik_volume_labels is not string
+and traefik_volume_labels | length > 0 %}
+    labels:
+{% for label in traefik_volume_labels %}
+      - {{ label }}
+{% endfor %}
+{% endif %}
+
+  {{ traefik_volume_prefix }}-dynamic:
+    name: "{{ traefik_volume_prefix }}-dynamic"
+    driver: local
+{% if traefik_volume_labels is defined
+and traefik_volume_labels is not mapping
+and traefik_volume_labels is iterable
+and traefik_volume_labels is not string
+and traefik_volume_labels | length > 0 %}
+    labels:
+{% for label in traefik_volume_labels %}
+      - {{ label }}
+{% endfor %}
+{% endif %}
+
+  {{ traefik_volume_prefix }}-certs:
+    name: "{{ traefik_volume_prefix }}-certs"
+    driver: local
+{% if traefik_volume_labels is defined
+and traefik_volume_labels is not mapping
+and traefik_volume_labels is iterable
+and traefik_volume_labels is not string
+and traefik_volume_labels | length > 0 %}
+    labels:
+{% for label in traefik_volume_labels %}
+      - {{ label }}
+{% endfor %}
+{% endif %}

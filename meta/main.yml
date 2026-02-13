@@ -1,0 +1,50 @@
+---
+# meta/main.yml - Ansible Galaxy metadata
+
+galaxy_info:
+  role_name: traefik
+  author: ax-bzh
+  description: >-
+    Deploy and configure Traefik v3.x reverse proxy with Docker Compose.
+    Features automatic HTTPS certificate management (Let's Encrypt/ZeroSSL),
+    Docker service discovery, custom error pages, and Prometheus metrics.
+
+  license: MIT
+
+  min_ansible_version: "2.14"
+
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+
+  galaxy_tags:
+    - traefik
+    - docker
+    - reverse_proxy
+    - load_balancer
+    - https
+    - tls
+    - letsencrypt
+    - zerossl
+    - acme
+    - certificates
+    - proxy
+    - container
+    - microservices
+    - web
+    - homelab
+
+  issue_tracker_url: https://github.com/axel/homelab-ansible/issues
+  repository: https://github.com/axel/homelab-ansible
+  documentation: https://github.com/axel/homelab-ansible/blob/main/roles/traefik/README.md
+
+dependencies:
+  - role: community.docker
+    version: ">=3.0.0"

@@ -1,0 +1,59 @@
+---
+- name: Validate required variables
+  delegate_to: localhost
+  ansible.builtin.assert:
+    that:
+      - traefik_subdomain is defined
+      - traefik_subdomain | length > 0
+      - traefik_subdomain is match ("(?=^.{1,63}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)?[a-zA-Z]{1,63}$)")
+
+      - traefik_domain_name is defined
+      - traefik_domain_name | length > 0
+      - traefik_domain_name is match ("(?=^.{4,63}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)")
+    fail_msg: "Required Traefik variables not set"
+    quiet: true
+
+  # no_log: true
+
+- name: Check if external networks exist
+  community.docker.docker_network_info:
+    name: "{{ item.name }}"
+  register: traefik_external_networks_info
+  loop: "{{ traefik_external_networks | default([]) }}"
+
+- name: Ensure app directory is present
+  ansible.builtin.file:
+    path: "{{ install_dir }}"
+    state: directory
+    mode: "2755"
+    owner: root
+    group: root
+
+- name: Deploy traefik docker-compose
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ install_dir }}/docker-compose.yml"
+    mode: '0644'
+    owner: root
+    group: root
+  no_log: true
+
+- name: Start traefik stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ install_dir }}"
+    state: present
+    pull: always
+- name: Get certs volume infos
+  community.docker.docker_volume_info:
+    name: "{{ traefik_volume_prefix }}-certs"
+  register: traefik_certs_volume_infos
+
+- name: Ensure acme.json files is present
+  ansible.builtin.file:
+    path: "{{ traefik_certs_volume_infos.volume.Mountpoint }}/acme.json"
+    state: touch
+    mode: '0600'
+    owner: 100000
+    group: 100000
+    modification_time: preserve
+    access_time: preserve

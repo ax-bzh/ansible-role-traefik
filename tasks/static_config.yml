@@ -1,0 +1,25 @@
+---
+- name: Get static volume infos
+  community.docker.docker_volume_info:
+    name: "{{ traefik_volume_prefix }}-static"
+  register: traefik_static_volume_infos
+
+- name: Ensure Traefik static configuration is up to date
+  ansible.builtin.template:
+    src: traefik.yml.j2
+    dest: "{{ traefik_static_volume_infos.volume.Mountpoint }}/traefik.yml"
+    mode: "{{ traefik_files_mode }}"
+    owner: "{{ traefik_files_owner }}"
+    group: "{{ traefik_files_group }}"
+  notify: Restart Traefik
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for traefik to be healthy
+  community.docker.docker_container_info:
+    name: "{{ traefik_container_name }}"
+  register: traefik_container_info
+  until: traefik_container_info.container.State.Health.Status == "healthy"
+  retries: 30
+  delay: 10

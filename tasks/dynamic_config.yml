@@ -1,0 +1,35 @@
+---
+- name: Get dynamic volume infos
+  community.docker.docker_volume_info:
+    name: "{{ traefik_volume_prefix }}-dynamic"
+  register: traefik_dynamic_volume_infos
+
+- name: Ensure Traefik dynamic configuration is up to date
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "{{ traefik_dynamic_volume_infos.volume.Mountpoint }}/{{ item.filename }}"
+    mode: "{{ traefik_files_mode }}"
+    owner: "{{ traefik_files_owner }}"
+    group: "{{ traefik_files_group }}"
+  loop: "{{ traefik_dynamic_configs }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: traefik_dynamic_config
+
+# - name: Restart Traefik
+#   when: traefik_static_config.changed or traefik_dynamic_config.changed
+#   block:
+#     - name: Restart Traefik
+#       community.docker.docker_compose_v2:
+#         project_src: "{{ install_dir }}"
+#         state: restarted
+
+#     - name: Wait for traefik to be healthy
+#       community.docker.docker_container_info:
+#         name: "{{ item }}"
+#       register: traefik_container_info
+#       until: traefik_container_info.container.State.Health.Status == "healthy"
+#       retries: 30
+#       delay: 10
+#       loop:
+#         - "{{ traefik_container_name }}"

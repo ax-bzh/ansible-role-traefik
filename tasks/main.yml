@@ -1,0 +1,21 @@
+---
+- name: Include installation tasks
+  ansible.builtin.include_tasks:
+    file: install.yml
+    apply:
+      tags: install
+  tags: [install]
+
+- name: Include static configuration tasks
+  ansible.builtin.include_tasks:
+    file: static_config.yml
+    apply:
+      tags: static_config
+  tags: [static_config]
+
+- name: Include dynamic configuration tasks
+  ansible.builtin.include_tasks:
+    file: dynamic_config.yml
+    apply:
+      tags: dynamic_config
+  tags: [dynamic_config]

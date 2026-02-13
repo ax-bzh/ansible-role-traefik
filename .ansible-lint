@@ -1,0 +1,47 @@
+---
+profile: production
+
+exclude_paths:
+  - .github/
+  - .gitlab-ci.yml
+  - molecule/
+  - "*.md"
+  - LICENSE
+
+# skip_list:
+#   - yaml[line-length]
+#   - name[template]
+#   - jinja[spacing]
+
+warn_list:
+  - experimental
+  - role-name
+
+enable_list:
+  - args
+  - empty-string-compare
+  - no-log-password
+  - no-same-owner
+
+use_default_rules: true
+
+offline: false
+
+quiet: false
+
+verbosity: 1
+
+loop_var_prefix: "^(__|{role}_)"
+
+var_naming_pattern: "^[a-z_][a-z0-9_]*$"
+
+task_name_prefix: "{stem} | "
+
+kinds:
+  - tasks: "tasks/*.yml"
+  - handlers: "handlers/*.yml"
+  - vars: "vars/*.yml"
+  - vars: "defaults/*.yml"
+  - meta: "meta/main.yml"
+  - playbook: "molecule/**/converge.yml"
+  - playbook: "molecule/**/verify.yml"

@@ -1,0 +1,13 @@
+---
+- name: Restart Traefik
+  community.docker.docker_compose_v2:
+    project_src: "{{ install_dir }}"
+    state: restarted
+  listen: "Restart Traefik"
+
+- name: Reload Traefik configuration
+  ansible.builtin.command:
+    cmd: docker exec {{ traefik_container_name }} kill -SIGHUP 1
+  changed_when: true
+  failed_when: false
+  listen: "Reload Traefik configuration"

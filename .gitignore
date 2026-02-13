@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Molecule
+.molecule/
+.cache/
+
+# Ansible
+*.retry
+.ansible/
+
+# Testing
+.pytest_cache/
+.tox/
+htmlcov/
+.coverage
+coverage.xml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets - Never commit these!
+*.vault
+*vault*.yml
+secrets.yml
+secrets/
+.env
+.envrc
+
+# Temporary files
+*.tmp
+*.temp
+*.log

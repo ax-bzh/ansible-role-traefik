@@ -1,0 +1,180 @@
+---
+##############################
+# Common data
+##############################
+install_app_name: "traefik" # noqa: var-naming[no-role-prefix]
+install_dir: "/var/lib/container-apps/{{ install_app_name }}" # noqa: var-naming[no-role-prefix]
+
+##############################
+# Containers settings
+##############################
+
+# Traefik
+traefik_image: "traefik:v3.6.7"
+traefik_container_name: "{{ install_app_name }}"
+traefik_networks:
+  - "{{ install_app_name }}-ingress"
+  - "{{ install_app_name }}-backend"
+traefik_container_env_variables:
+  TZ: "Europe/Paris"
+traefik_container_http_port: 80
+traefik_container_https_port: 443
+traefik_memory_limit: "1g"
+traefik_cpu_limit: "0.5"
+traefik_restart_policy: "unless-stopped"
+traefik_healthcheck_interval: "30s"
+traefik_healthcheck_timeout: "30s"
+traefik_healthcheck_retries: 3
+traefik_healthcheck_start_period: "20s"
+traefik_files_mode: "0400"
+traefik_files_owner: root
+traefik_files_group: root
+
+
+# Error pages
+traefik_error_pages_enabled: true
+traefik_error_pages_image: "ghcr.io/tarampampam/error-pages:3.8"
+traefik_error_pages_container_name: "{{ install_app_name }}-error-pages"
+traefik_error_pages_networks:
+  - "{{ install_app_name }}-backend"
+traefik_error_pages_memory_limit: "0.25g"
+traefik_error_pages_cpu_limit: "0.1"
+traefik_error_pages_restart_policy: "unless-stopped"
+traefik_error_pages_healthcheck_interval: "10s"
+traefik_error_pages_healthcheck_timeout: "10s"
+traefik_error_pages_healthcheck_retries: 3
+traefik_error_pages_healthcheck_start_period: "10s"
+
+# Networks
+traefik_managed_networks:
+  - name: "{{ install_app_name }}-ingress"
+    driver: bridge
+  - name: "{{ install_app_name }}-backend"
+    driver: bridge
+    internal: true
+traefik_external_networks: []
+
+# Volumes
+traefik_volume_prefix: "{{ install_app_name }}"
+traefik_volume_labels: []
+
+##############################
+# Traefik settings
+##############################
+
+# Base configuration
+traefik_domain_name: "example.com"
+traefik_subdomain: "traefik"
+traefik_dashboard_subdomain: "dashboard.traefik"
+traefik_metrics_subdomain: "metrics.traefik"
+
+traefik_fqdn: "{{ traefik_subdomain }}.{{ traefik_domain_name }}"
+traefik_dashboard_fqdn: "{{ traefik_dashboard_subdomain }}.{{ traefik_domain_name }}"
+traefik_metrics_fqdn: "{{ traefik_metrics_subdomain }}.{{ traefik_domain_name }}"
+
+
+traefik_log_level: "INFO"  # DEBUG, INFO, WARN, ERROR
+traefik_log_format: json
+traefik_access_log_enabled: true
+
+traefik_dashboard_enabled: true
+traefik_metrics_enabled: true
+
+traefik_check_new_version: true
+traefik_anonymous_usage: false
+
+traefik_enable_healthcheck_url: true
+
+# Providers
+traefik_file_provider_enabled: true
+traefik_file_provider_directory: "/dynamic"
+
+traefik_docker_provider_enabled: true
+traefik_docker_provider_endpoint: "unix:///var/run/docker.sock"
+traefik_docker_provider_username: ""
+traefik_docker_provider_password: ""
+traefik_docker_provider_use_bind_port_ip: false
+traefik_docker_provider_network: "proxy-network"
+traefik_docker_provider_default_rule: ""
+traefik_docker_provider_constraints: ""
+traefik_docker_provider_tls_ca: ""
+traefik_docker_provider_tls_cert: ""
+traefik_docker_provider_tls_key: ""
+traefik_docker_provider_tls_insecure_skip_verify: false
+
+traefik_ecs_provider_enabled: false
+traefik_ecs_provider_region: ""
+traefik_ecs_provider_access_key_id: ""
+traefik_ecs_provider_secret_access_key: ""
+traefik_ecs_provider_clusters: ["default"]
+traefik_ecs_provider_constraints: ""
+traefik_ecs_provider_default_rule: ""
+
+traefik_http_provider_enabled: false
+traefik_http_provider_endpoint: ""
+traefik_http_provider_headers: ""
+traefik_http_provider_tls_ca: ""
+traefik_http_provider_tls_cert: ""
+traefik_http_provider_tls_key: ""
+traefik_http_provider_tls_insecure_skip_verify: false
+
+## Entrypoints
+traefik_http_entrypoint_name: "http"
+traefik_http_address: 0.0.0.0
+traefik_http_port: 80
+
+traefik_https_entrypoint_name: "https"
+traefik_https_address: 0.0.0.0
+traefik_https_port: 443
+
+traefik_healthcheck_entrypoint_name: "healthcheck"
+traefik_healthcheck_address: 0.0.0.0
+traefik_healthcheck_port: 8080
+
+traefik_entrypoints_encoded_characters:
+  allowEncodedSlash: false
+  allowEncodedBackSlash: false
+  allowEncodedNullCharacter: false
+  allowEncodedSemicolon: false
+  allowEncodedPercent: false
+  allowEncodedQuestionMark: false
+  allowEncodedHash: false
+
+# TLS
+traefik_tls_min_version: "VersionTLS12"
+traefik_tls_cipher_suites:
+  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+traefik_tls_curve_preferences:
+  - X25519MLKEM768
+  - X25519
+  - CurveP256
+
+# ACME configuration
+traefik_acme_provider: "letsencrypt" # Supported providers: letsencrypt, zerossl
+traefik_acme_email: ""
+traefik_acme_storage: "/certs/acme.json"
+traefik_zerossl_server: "https://acme.zerossl.com/v2/DV90"
+traefik_zerossl_eab_kid: ""
+traefik_zerossl_eab_hmac: ""
+traefik_letsencrypt_server: "https://acme-v02.api.letsencrypt.org/directory"
+
+# DNS Challenge configuration (Cloudflare)
+traefik_dns_provider: "cloudflare"
+traefik_dns_resolvers:
+  - "1.1.1.1:53"
+  - "8.8.8.8:53"
+
+##############################
+# Error pages settings
+##############################
+traefik_error_pages_template: "lost-in-space"
+traefik_error_pages_listen_port: 8080
+
+##############################
+# Traefik configuration
+##############################
+
+traefik_dynamic_configs: {}
