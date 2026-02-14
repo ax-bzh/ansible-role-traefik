@@ -27,8 +27,8 @@ galaxy_info:
   galaxy_tags:
     - traefik
     - docker
-    - reverse_proxy
-    - load_balancer
+    - reverseproxy
+    - loadbalancer
     - https
     - tls
     - letsencrypt
@@ -41,6 +41,5 @@ galaxy_info:
     - web
     - homelab
 
-dependencies:
-  - role: community.docker
-    version: ">=3.0.0"
+collections:
+  - community.docker
