@@ -15,21 +15,3 @@
   loop_control:
     label: "{{ item.name }}"
   register: traefik_dynamic_config
-
-# - name: Restart Traefik
-#   when: traefik_static_config.changed or traefik_dynamic_config.changed
-#   block:
-#     - name: Restart Traefik
-#       community.docker.docker_compose_v2:
-#         project_src: "{{ install_dir }}"
-#         state: restarted
-
-#     - name: Wait for traefik to be healthy
-#       community.docker.docker_container_info:
-#         name: "{{ item }}"
-#       register: traefik_container_info
-#       until: traefik_container_info.container.State.Health.Status == "healthy"
-#       retries: 30
-#       delay: 10
-#       loop:
-#         - "{{ traefik_container_name }}"
