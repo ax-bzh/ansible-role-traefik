@@ -181,6 +181,30 @@ traefik_error_pages_listen_port: 8080
 # Traefik configuration
 ##############################
 
+# Security headers
+traefik_hsts_max_age: 31536000  # 1 year
+traefik_hsts_include_subdomains: true
+traefik_hsts_preload: true
+
+# Rate limiting
+traefik_rate_limit_average: 100  # requests per second
+traefik_rate_limit_burst: 50
+traefik_rate_limit_admin_average: 20
+traefik_rate_limit_admin_burst: 10
+
+# IP Whitelisting
+traefik_admin_whitelist:
+  - "192.168.0.0/16"
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+traefik_metrics_whitelist:
+  - "192.168.0.0/16"
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+
+# In-flight requests limit
+traefik_inflight_limit: 100
+
 traefik_dynamic_configs:
   - name: TLS Configuration
     filename: tls.yml

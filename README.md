@@ -172,6 +172,16 @@ ansible-galaxy collection install community.docker
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `traefik_dynamic_configs` | See defaults | Dynamic configurations dictionary |
+| `traefik_hsts_max_age` | `31536000` | Enable HSTS for 1 year |
+| `traefik_hsts_include_subdomains` | `true` | Enable HSTS for subdomains |
+| `traefik_hsts_preload` | `true` | Enable HSTS preload |
+| `traefik_rate_limit_average` | `100` | Average rate limit for overall configuration |
+| `traefik_rate_limit_burst` | `50` | Burst rate limit for overall configuration |
+| `traefik_rate_limit_admin_average` | `20` | Average rate limit for admin configuration (overall configuration still apply) |
+| `traefik_rate_limit_admin_burst` | `10` | Burst rate limit for overall configuration (overall configuration still apply) |
+| `traefik_admin_whitelist` | `["192.168.0.0/16", "10.0.0.0/8", "172.16.0.0/12"]` | Subnets whitelist for dashboard |
+| `traefik_metrics_whitelist` | `["192.168.0.0/16", "10.0.0.0/8", "172.16.0.0/12"]` | Subnets whitelist for metrics |
+| `traefik_inflight_limit` | `100` | Inflight limit |
 
 ## Dependencies
 
