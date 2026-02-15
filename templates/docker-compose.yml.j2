@@ -15,6 +15,7 @@ services:
     ports:
       - "{{ traefik_container_http_port }}:{{ traefik_http_port }}"
       - "{{ traefik_container_https_port }}:{{ traefik_https_port }}"
+      - "{{ traefik_container_metrics_port }}:{{ traefik_metrics_port }}"
     networks:
 {{ traefik_networks | to_nice_yaml | indent(6, first=true) }}
     environment:

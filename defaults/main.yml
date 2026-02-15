@@ -19,6 +19,7 @@ traefik_container_env_variables:
   TZ: "Europe/Paris"
 traefik_container_http_port: 80
 traefik_container_https_port: 443
+traefik_container_metrics_port: 9090
 traefik_memory_limit: "1g"
 traefik_cpu_limit: "0.5"
 traefik_restart_policy: "unless-stopped"
