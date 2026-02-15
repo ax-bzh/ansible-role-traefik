@@ -131,6 +131,9 @@ ansible-galaxy collection install community.docker
 | `traefik_https_entrypoint_name` | `https` | HTTPS entrypoint name |
 | `traefik_https_address` | `0.0.0.0` | HTTPS listen address |
 | `traefik_https_port` | `443` | HTTPS port |
+| `traefik_metrics_entrypoint_name` | `metrics` | Metrics entrypoint name |
+| `traefik_metrics_address` | `0.0.0.0` | Metrics listen address |
+| `traefik_metrics_port` | `9090` | Metrics port |
 
 ### TLS Configuration
 

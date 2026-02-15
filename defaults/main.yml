@@ -127,6 +127,10 @@ traefik_https_entrypoint_name: "https"
 traefik_https_address: 0.0.0.0
 traefik_https_port: 443
 
+traefik_metrics_entrypoint_name: "metrics"
+traefik_metrics_address: 0.0.0.0
+traefik_metrics_port: 9090
+
 traefik_healthcheck_entrypoint_name: "healthcheck"
 traefik_healthcheck_address: 0.0.0.0
 traefik_healthcheck_port: 8080

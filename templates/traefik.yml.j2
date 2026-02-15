@@ -80,6 +80,23 @@ entryPoints:
       encodedCharacters:
 {{ traefik_entrypoints_encoded_characters | to_nice_yaml | indent(8, first=true) }}
 
+{% if traefik_metrics_enabled %}
+  {{ traefik_metrics_entrypoint_name }}:
+    address: {{ traefik_metrics_address }}:{{ traefik_metrics_port }}
+    http:
+      middlewares:
+        - chain-global@file
+        - chain-metrics@file
+      encodedCharacters:
+        allowEncodedSlash: false
+        allowEncodedBackSlash: false
+        allowEncodedNullCharacter: false
+        allowEncodedSemicolon: false
+        allowEncodedPercent: false
+        allowEncodedQuestionMark: false
+        allowEncodedHash: false
+{% endif %}
+
 {% if traefik_enable_healthcheck_url %}
   {{ traefik_healthcheck_entrypoint_name }}:
     address: "{{ traefik_healthcheck_address }}:{{ traefik_healthcheck_port }}"
