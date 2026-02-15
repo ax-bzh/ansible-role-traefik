@@ -171,7 +171,7 @@ ansible-galaxy collection install community.docker
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `traefik_dynamic_configs` | `{}` | Dynamic configurations dictionary |
+| `traefik_dynamic_configs` | See defaults | Dynamic configurations dictionary |
 
 ## Dependencies
 

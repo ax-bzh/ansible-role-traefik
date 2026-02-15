@@ -181,4 +181,178 @@ traefik_error_pages_listen_port: 8080
 # Traefik configuration
 ##############################
 
-traefik_dynamic_configs: {}
+traefik_dynamic_configs:
+  - name: TLS Configuration
+    filename: tls.yml
+    content: |-
+      {{ ansible_managed | comment }}
+
+      tls:
+        options:
+          default:
+            minVersion: {{ traefik_tls_min_version }}
+            sniStrict: true
+            cipherSuites:
+      {% for cipher in traefik_tls_cipher_suites %}
+              - {{ cipher }}
+      {% endfor %}
+            curvePreferences:
+      {% for curve in traefik_tls_curve_preferences %}
+              - {{ curve }}
+      {% endfor %}
+  - name: Dashboard router
+    filename: router_traefik_dashboard.yml
+    content: |-
+      {{ ansible_managed | comment }}
+
+      http:
+        routers:
+          dashboard:
+            rule: "Host(`{{ traefik_dashboard_fqdn }}`)"
+            entryPoints:
+              - https
+            service: api@internal
+            tls:
+              certResolver: {{ traefik_acme_provider }}
+              domains:
+                - main: {{ traefik_dashboard_fqdn }}
+                  sans:
+                    - "*.{{ traefik_dashboard_fqdn }}"
+  - name: Metrics router
+    filename: router_traefik_metrics.yml
+    content: |-
+      {{ ansible_managed | comment }}
+
+      http:
+        routers:
+          metrics:
+            rule: "Host(`{{ traefik_metrics_fqdn }}`)"
+            entryPoints:
+              - {{ traefik_metrics_entrypoint_name }}
+            service: prometheus@internal
+            tls:
+              certResolver: {{ traefik_acme_provider }}
+              domains:
+                - main: {{ traefik_metrics_fqdn }}
+                  sans:
+                    - "*.{{ traefik_metrics_fqdn }}"
+  - name: Error-pages service
+    filename: service_error-pages.yml
+    content: |-
+      {{ ansible_managed | comment }}
+
+      http:
+        services:
+      {% if traefik_error_pages_enabled %}
+          error-pages-service:
+            loadBalancer:
+              servers:
+                - url: "http://error-pages:{{ traefik_error_pages_listen_port }}"
+              healthCheck:
+                path: /health
+                interval: 30s
+                timeout: 5s
+      {% endif %}
+  - name: Global Middlewares
+    filename: middlewares_global.yml
+    content: |-
+      {{ ansible_managed | comment }}
+
+      http:
+        middlewares:
+          security-headers:
+            headers:
+              customFrameOptionsValue: "SAMEORIGIN"
+              contentTypeNosniff: true
+              forceSTSHeader: {{ traefik_hsts_include_subdomains | lower }}
+              stsSeconds: {{ traefik_hsts_max_age }}
+              stsIncludeSubdomains: {{ traefik_hsts_include_subdomains | lower }}
+              stsPreload: {{ traefik_hsts_preload | lower }}
+              referrerPolicy: "strict-origin-when-cross-origin"
+              permissionsPolicy: "geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=(), magnetometer=(), gyroscope=(), accelerometer=()"
+              customResponseHeaders:
+                X-Robots-Tag: "none"
+                Server: ""
+                X-Powered-By: ""
+
+          rate-limit-global:
+            rateLimit:
+              average: {{ traefik_rate_limit_average }}
+              burst: {{ traefik_rate_limit_burst }}
+              period: 1s
+
+          inflight-limit:
+            inFlightReq:
+              amount: {{ traefik_inflight_limit }}
+              sourceCriterion:
+                ipStrategy:
+                  depth: 1
+
+          compress:
+            compress:
+              excludedContentTypes:
+                - text/event-stream
+
+      {% if traefik_error_pages_enabled %}
+          error-pages:
+            errors:
+              status:
+                - "400-599"
+              service: error-pages-service
+              query: "/{status}.html"
+      {% endif %}
+
+          chain-global:
+            chain:
+              middlewares:
+      {% if traefik_error_pages_enabled %}
+                - error-pages
+      {% endif %}
+                - rate-limit-global
+                - inflight-limit
+                - security-headers
+                - compress
+  - name: Admin Middlewares
+    filename: middlewares_admin.yml
+    content: |-
+      {{ ansible_managed | comment }}
+
+      http:
+        middlewares:
+          rate-limit-admin:
+            rateLimit:
+              average: {{ traefik_rate_limit_admin_average }}
+              burst: {{ traefik_rate_limit_admin_burst }}
+              period: 1s
+
+          ip-allowlist-admin:
+            ipAllowList:
+              sourceRange:
+      {% for ip in traefik_admin_whitelist %}
+                - {{ ip }}
+      {% endfor %}
+
+          chain-admin:
+            chain:
+              middlewares:
+                - ip-allowlist-admin
+                - rate-limit-admin
+  - name: Metrics Middlewares
+    filename: middlewares_traefik_metrics.yml
+    content: |-
+      {{ ansible_managed | comment }}
+
+      http:
+        middlewares:
+          ip-allowlist-metrics:
+            ipAllowList:
+              sourceRange:
+      {% for ip in traefik_metrics_whitelist %}
+                - {{ ip }}
+      {% endfor %}
+
+          chain-metrics:
+            chain:
+              middlewares:
+                - ip-allowlist-metrics
+                - rate-limit-admin
