@@ -23,7 +23,7 @@
 
 - name: Ensure app directory is present
   ansible.builtin.file:
-    path: "{{ install_dir }}"
+    path: "{{ traefik_install_dir }}"
     state: directory
     mode: "2755"
     owner: root
@@ -32,7 +32,7 @@
 - name: Deploy traefik docker-compose
   ansible.builtin.template:
     src: docker-compose.yml.j2
-    dest: "{{ install_dir }}/docker-compose.yml"
+    dest: "{{ traefik_install_dir }}/docker-compose.yml"
     mode: '0644'
     owner: root
     group: root
@@ -40,7 +40,7 @@
 
 - name: Start traefik stack
   community.docker.docker_compose_v2:
-    project_src: "{{ install_dir }}"
+    project_src: "{{ traefik_install_dir }}"
     state: present
     pull: always
 - name: Get certs volume infos

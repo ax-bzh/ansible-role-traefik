@@ -35,8 +35,8 @@ ansible-galaxy collection install community.docker
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `install_app_name` | `traefik` | Application name |
-| `install_dir` | `/var/lib/container-apps/traefik` | Installation directory |
+| `traefik_app_name` | `traefik` | Application name |
+| `traefik_install_dir` | `/var/lib/container-apps/traefik` | Installation directory |
 
 ### Traefik Container
 

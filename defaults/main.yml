@@ -2,8 +2,8 @@
 ##############################
 # Common data
 ##############################
-install_app_name: "traefik" # noqa: var-naming[no-role-prefix]
-install_dir: "/var/lib/container-apps/{{ install_app_name }}" # noqa: var-naming[no-role-prefix]
+traefik_app_name: "traefik"
+traefik_install_dir: "/var/lib/container-apps/{{ traefik_app_name }}"
 
 ##############################
 # Containers settings
@@ -11,10 +11,10 @@ install_dir: "/var/lib/container-apps/{{ install_app_name }}" # noqa: var-naming
 
 # Traefik
 traefik_image: "traefik:v3.6.7"
-traefik_container_name: "{{ install_app_name }}"
+traefik_container_name: "{{ traefik_app_name }}"
 traefik_networks:
-  - "{{ install_app_name }}-ingress"
-  - "{{ install_app_name }}-backend"
+  - "{{ traefik_app_name }}-ingress"
+  - "{{ traefik_app_name }}-backend"
 traefik_container_env_variables:
   TZ: "Europe/Paris"
 traefik_container_http_port: 80
@@ -35,9 +35,9 @@ traefik_files_group: root
 # Error pages
 traefik_error_pages_enabled: true
 traefik_error_pages_image: "ghcr.io/tarampampam/error-pages:3.8"
-traefik_error_pages_container_name: "{{ install_app_name }}-error-pages"
+traefik_error_pages_container_name: "{{ traefik_app_name }}-error-pages"
 traefik_error_pages_networks:
-  - "{{ install_app_name }}-backend"
+  - "{{ traefik_app_name }}-backend"
 traefik_error_pages_memory_limit: "0.25g"
 traefik_error_pages_cpu_limit: "0.1"
 traefik_error_pages_restart_policy: "unless-stopped"
@@ -48,15 +48,15 @@ traefik_error_pages_healthcheck_start_period: "10s"
 
 # Networks
 traefik_managed_networks:
-  - name: "{{ install_app_name }}-ingress"
+  - name: "{{ traefik_app_name }}-ingress"
     driver: bridge
-  - name: "{{ install_app_name }}-backend"
+  - name: "{{ traefik_app_name }}-backend"
     driver: bridge
     internal: true
 traefik_external_networks: []
 
 # Volumes
-traefik_volume_prefix: "{{ install_app_name }}"
+traefik_volume_prefix: "{{ traefik_app_name }}"
 traefik_volume_labels: []
 
 ##############################
